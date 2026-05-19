@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Menu, X, Zap } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import './Navbar.css';
 
 export default function Navbar() {
@@ -27,24 +28,27 @@ export default function Navbar() {
   return (
     <nav className={`navbar ${scrolled ? 'navbar--scrolled' : ''}`}>
       <div className="container navbar__inner">
-        <a href="#" className="navbar__logo">
+        <Link to="/" className="navbar__logo">
           <Zap size={20} className="navbar__logo-icon" />
           MeetFlow AI
-        </a>
+        </Link>
 
         <ul className="navbar__links">
-          {links.map(l => (
+          {links.map((l) => (
             <li key={l.label}>
               <a href={l.href} className="navbar__link">{l.label}</a>
             </li>
           ))}
         </ul>
 
-        <a href="#contact" className="btn-primary navbar__cta">Get Started Free</a>
+        <div className="navbar__actions">
+          <Link to="/login" className="navbar__link navbar__login-link">Sign In</Link>
+          <Link to="/register" className="btn-primary navbar__cta">Get Started Free</Link>
+        </div>
 
         <button
           className="navbar__hamburger"
-          onClick={() => setOpen(o => !o)}
+          onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
         >
           {open ? <X size={22} /> : <Menu size={22} />}
@@ -53,15 +57,18 @@ export default function Navbar() {
 
       <div className={`navbar__mobile ${open ? 'navbar__mobile--open' : ''}`}>
         <ul className="navbar__mobile-links">
-          {links.map(l => (
+          {links.map((l) => (
             <li key={l.label}>
               <a href={l.href} className="navbar__mobile-link" onClick={() => setOpen(false)}>{l.label}</a>
             </li>
           ))}
+          <li>
+            <Link to="/login" className="navbar__mobile-link" onClick={() => setOpen(false)}>Sign In</Link>
+          </li>
+          <li>
+            <Link to="/register" className="btn-primary navbar__mobile-cta" onClick={() => setOpen(false)}>Get Started Free</Link>
+          </li>
         </ul>
-        <a href="#contact" className="btn-primary navbar__mobile-cta" onClick={() => setOpen(false)}>
-          Get Started Free
-        </a>
       </div>
     </nav>
   );

@@ -38,7 +38,13 @@
   display: flex;
   gap: 32px;
   list-style: none;
+}
+
+.navbar__actions {
   margin-left: auto;
+  display: flex;
+  align-items: center;
+  gap: 16px;
 }
 
 .navbar__link {
@@ -48,6 +54,11 @@
   transition: color 0.2s;
 }
 .navbar__link:hover { color: var(--text-primary); }
+
+.navbar__login-link {
+  color: var(--text-primary);
+  font-weight: 600;
+}
 
 .navbar__cta { margin-left: 8px; }
 
