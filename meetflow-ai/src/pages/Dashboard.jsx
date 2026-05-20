@@ -97,7 +97,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState('');
   const [meetingFilter, setMeetingFilter] = useState('all');
   const [taskFilter, setTaskFilter] = useState('all');
-  const [selectedMeetingId, setSelectedMeetingId] = useState(1);
+  const [selectedMeetingId, setSelectedMeetingId] = useState(null);
   const [selectedFile, setSelectedFile] = useState(null);
   const [uploadTitle, setUploadTitle] = useState('');
   const [processing, setProcessing] = useState(false);
@@ -148,6 +148,36 @@ export default function Dashboard() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
+  useEffect(() => {
+    const loadData = async () => {
+      const token = localStorage.getItem('meetflow_token');
+      if (!token) return;
+      try {
+        const [meetingsRes, tasksRes] = await Promise.all([
+          fetch('/api/meetings', { headers: { Authorization: `Bearer ${token}` } }),
+          fetch('/api/tasks', { headers: { Authorization: `Bearer ${token}` } }),
+        ]);
+
+        if (meetingsRes.ok) {
+          const meetingsData = await meetingsRes.json();
+          setMeetings(meetingsData.meetings || []);
+          if (meetingsData.meetings?.length) {
+            setSelectedMeetingId(meetingsData.meetings[0].id);
+          }
+        }
+
+        if (tasksRes.ok) {
+          const tasksData = await tasksRes.json();
+          setTasks(tasksData.tasks || []);
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    loadData();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('meetflow_token');
     localStorage.removeItem('meetflow_user');
@@ -179,8 +209,8 @@ export default function Dashboard() {
     return tasks;
   }, [tasks, taskFilter]);
 
-  const selectedMeeting = meetings.find((meeting) => meeting.id === selectedMeetingId) || meetings[0];
-  const detailTasks = tasks.filter((task) => task.meetingId === selectedMeeting?.id);
+  const selectedMeeting = meetings.find((meeting) => String(meeting.id) === String(selectedMeetingId)) || meetings[0];
+  const detailTasks = selectedMeeting ? tasks.filter((task) => String(task.meetingId) === String(selectedMeeting.id)) : [];
   const pendingTasks = tasks.filter((task) => !task.done).length;
   const completedTasks = tasks.filter((task) => task.done).length;
   const completionRate = tasks.length ? Math.round((completedTasks / tasks.length) * 100) : 0;
@@ -306,56 +336,57 @@ export default function Dashboard() {
     }
 
     setProcessing(true);
-    setProgress(0);
     setUploadStep('step-upload');
+    setProgress(20);
 
-    const steps = [
-      { id: 'step-upload', title: 'Uploading to cloud…', progress: 20, delay: 1000 },
-      { id: 'step-transcribe', title: 'Whisper is transcribing…', progress: 55, delay: 2200 },
-      { id: 'step-extract', title: 'GPT-4o extracting tasks…', progress: 80, delay: 2000 },
-      { id: 'step-save', title: 'Saving to your dashboard…', progress: 100, delay: 800 },
-    ];
+    const token = localStorage.getItem('meetflow_token');
+    const formData = new FormData();
+    formData.append('audio', selectedFile);
+    formData.append('title', uploadTitle.trim());
 
-    for (let i = 0; i < steps.length; i += 1) {
-      const step = steps[i];
-      setUploadStep(step.id);
-      setProgress(step.progress);
-      await new Promise((resolve) => setTimeout(resolve, step.delay));
-    }
+    try {
+      const response = await fetch('/api/meetings', {
+        method: 'POST',
+        headers: { Authorization: `Bearer ${token}` },
+        body: formData,
+      });
 
-    const nextMeetingId = Math.max(0, ...meetings.map((meeting) => meeting.id)) + 1;
-    const nextTaskId = Math.max(0, ...tasks.map((task) => task.id)) + 1;
-    const newMeeting = {
-      id: nextMeetingId,
-      title: uploadTitle,
-      date: 'Today',
-      duration: '—',
-      taskCount: 3,
-      status: 'done',
-      icon: '🆕',
-      summary: 'A new meeting was uploaded and processed automatically. Tasks were extracted from the recording and added to your workspace.',
-      transcript: `Uploaded meeting file: ${selectedFile.name}\nThis meeting transcript is not available in the demo view.`,
-    };
-    const newTasks = [
-      { id: nextTaskId, meetingId: nextMeetingId, title: 'Complete action item from new meeting', assignee: 'You', deadline: 'This week', priority: 'high', done: false },
-      { id: nextTaskId + 1, meetingId: nextMeetingId, title: 'Follow up on discussion points', assignee: 'Team', deadline: 'No deadline', priority: 'medium', done: false },
-      { id: nextTaskId + 2, meetingId: nextMeetingId, title: 'Send summary to stakeholders', assignee: 'You', deadline: 'Today', priority: 'high', done: false },
-    ];
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.message || 'Upload failed');
+      }
 
-    setMeetings((previous) => [newMeeting, ...previous]);
-    setTasks((previous) => [...newTasks, ...previous]);
+      setUploadStep('step-transcribe');
+      setProgress(55);
 
-    showToast('Tasks extracted successfully!');
-    setTimeout(() => {
-      setProcessing(false);
-      setSelectedFile(null);
-      setUploadTitle('');
-      setProgress(0);
-      setUploadStep('step-upload');
-      removeFile();
-      setSelectedMeetingId(nextMeetingId);
+      const data = await response.json();
+      const { meeting: savedMeeting, tasks: savedTasks } = data;
+
+      setUploadStep('step-extract');
+      setProgress(80);
+      await new Promise((resolve) => setTimeout(resolve, 800));
+
+      setMeetings((previous) => [savedMeeting, ...previous]);
+      setTasks((previous) => [...savedTasks, ...previous]);
+
+      setUploadStep('step-save');
+      setProgress(100);
+      setSelectedMeetingId(savedMeeting.id);
+      showToast('Meeting uploaded and tasks extracted successfully!');
       handlePageChange('detail');
-    }, 600);
+    } catch (err) {
+      console.error(err);
+      showToast(err.message || 'Upload error', true);
+    } finally {
+      setTimeout(() => {
+        setProcessing(false);
+        setProgress(0);
+        setUploadStep('step-upload');
+        setSelectedFile(null);
+        setUploadTitle('');
+        removeFile();
+      }, 600);
+    }
   };
 
   const exportCSV = () => {
