@@ -115,7 +115,7 @@ export default function Login() {
 
           <div className="auth-footer">
             <span className="auth-note" />
-            <a href="#" className="auth-link">Forgot password?</a>
+            <Link to="/forgot-password" className="auth-link">Forgot password?</Link>
           </div>
 
           <button className="auth-button" type="submit" disabled={loading}>
