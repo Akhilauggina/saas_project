@@ -10,7 +10,7 @@ const INITIAL_MEETINGS = [
     duration: '45 min',
     taskCount: 6,
     status: 'done',
-    icon: '📋',
+    icon: 'fa-regular fa-clipboard',
     summary:
       'The team discussed sprint goals for Q3 Week 2. Rahul was assigned frontend work, Priya owns testing, and the deployment plan targets Monday after review.',
     transcript:
@@ -23,7 +23,7 @@ const INITIAL_MEETINGS = [
     duration: '30 min',
     taskCount: 4,
     status: 'done',
-    icon: '🎨',
+    icon: 'fa-solid fa-palette',
     summary: 'A review of the landing page design, focusing on responsiveness, typography, and conversion flow before scheduling dev handoff.',
     transcript: 'Priya: This landing page needs clearer CTAs. Rahul: Agree, we should simplify the hero copy and add trust badges.\n\nTeam: Let’s update the mobile layout and prepare assets for the next sprint.',
   },
@@ -34,7 +34,7 @@ const INITIAL_MEETINGS = [
     duration: '60 min',
     taskCount: 8,
     status: 'done',
-    icon: '💼',
+    icon: 'fa-solid fa-briefcase',
     summary: 'Pitch deck was polished, audience questions were reviewed, and follow-up actions were assigned to finalize the investor package.',
     transcript: 'Rahul: We need stronger momentum in slide three. Priya: I will tighten the metrics and add the roadmap.\n\nTeam: Prepare answers for projected growth and next milestones.',
   },
@@ -45,7 +45,7 @@ const INITIAL_MEETINGS = [
     duration: '90 min',
     taskCount: 5,
     status: 'done',
-    icon: '⚙️',
+    icon: 'fa-solid fa-gear',
     summary: 'The architecture was aligned around modular APIs and a new deployment strategy for better performance and reliability.',
     transcript: 'Rahul: We should break the backend into services. Priya: The database indexing needs to be improved.\n\nTeam: Agree on a phased rollout plan and performance checkpoints.',
   },
@@ -56,7 +56,7 @@ const INITIAL_MEETINGS = [
     duration: '40 min',
     taskCount: 7,
     status: 'processing',
-    icon: '📢',
+    icon: 'fa-solid fa-bullhorn',
     summary: 'Initial marketing campaigns were mapped out with growth targets and follow-up experiments for the next quarter.',
     transcript: 'Rahul: Let’s launch the first campaign with the current creative. Priya: We should A/B test the headline.\n\nTeam: Plan weekly performance reviews and channel adjustments.',
   },
@@ -84,6 +84,14 @@ const PAGE_TITLES = {
   tasks: 'All Tasks',
   detail: 'Meeting Detail',
   profile: 'Profile',
+};
+
+const NAV_ICONS = {
+  dashboard: <i className="fa-solid fa-chart-pie" aria-hidden="true" />, 
+  upload: <i className="fa-solid fa-microphone" aria-hidden="true" />,
+  meetings: <i className="fa-solid fa-calendar-days" aria-hidden="true" />,
+  tasks: <i className="fa-solid fa-list-check" aria-hidden="true" />,
+  profile: <i className="fa-solid fa-user" aria-hidden="true" />,
 };
 
 export default function Dashboard() {
@@ -224,12 +232,12 @@ export default function Dashboard() {
         handlePageChange('detail');
       }}
     >
-      <div className="meeting-icon">{meeting.icon}</div>
+      <div className="meeting-icon"><i className={meeting.icon} aria-hidden="true" /></div>
       <div className="meeting-info">
         <div className="meeting-title">{meeting.title}</div>
         <div className="meeting-meta">
-          <span>📅 {meeting.date}</span>
-          <span>⏱ {meeting.duration}</span>
+          <span><i className="fa-solid fa-calendar-days" /> {meeting.date}</span>
+          <span style={{ marginLeft: 12 }}><i className="fa-solid fa-stopwatch" /> {meeting.duration}</span>
         </div>
       </div>
       <div className={`meeting-status ${meeting.status === 'done' ? 'status-done' : 'status-processing'}`}>
@@ -252,8 +260,8 @@ export default function Dashboard() {
         <div className="task-body">
           <div className="task-title-text">{task.title}</div>
           <div className="task-chips">
-            <span className="chip chip-assignee">👤 {task.assignee}</span>
-            <span className="chip chip-deadline">📅 {task.deadline}</span>
+            <span className="chip chip-assignee"><i className="fa-solid fa-user" /> {task.assignee}</span>
+            <span className="chip chip-deadline"><i className="fa-solid fa-calendar-days" /> {task.deadline}</span>
             <span className={`chip ${priorityClass}`}>{task.priority.charAt(0).toUpperCase() + task.priority.slice(1)}</span>
             {showMeeting && meeting ? (
               <span className="chip" style={{ background: '#161929', color: '#94a1c4', border: '1px solid rgba(255,255,255,0.08)' }}>
@@ -264,7 +272,7 @@ export default function Dashboard() {
         </div>
         <div className="task-actions">
           <button className="task-action-btn del" type="button" onClick={() => deleteTask(task.id)} title="Delete">
-            🗑
+            <i className="fa-solid fa-trash" aria-hidden="true" />
           </button>
         </div>
       </div>
@@ -428,14 +436,10 @@ export default function Dashboard() {
   return (
     <section className="dashboard-page">
       <div className="sidebar-toggle" onClick={() => setSidebarOpen((prev) => !prev)}>
-        ☰
+        <i className="fa-solid fa-bars" aria-hidden="true" />
       </div>
 
       <aside className={`sidebar ${sidebarOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" onClick={() => handlePageChange('dashboard')}>
-          <div className="logo-dot" />
-          <span className="logo-text">MeetSync AI</span>
-        </div>
 
         <nav className="sidebar-nav">
           <div className="nav-section-label">Workspace</div>
@@ -445,41 +449,39 @@ export default function Dashboard() {
               className={`nav-item ${activePage === item ? 'active' : ''}`}
               onClick={() => handlePageChange(item)}
             >
-              <span className="nav-icon">⬛</span>
+              <span className="nav-icon">{NAV_ICONS[item]}</span>
               {PAGE_TITLES[item]}
               {item === 'tasks' ? <span className="nav-badge">{pendingTasks}</span> : null}
             </div>
           ))}
-          <div className="nav-section-label">Account</div>
-          <div className={`nav-item ${activePage === 'profile' ? 'active' : ''}`} onClick={() => handlePageChange('profile')}>
-            <span className="nav-icon">⬛</span>
-            Profile
-          </div>
         </nav>
 
         <div className="sidebar-user">
-          <div className="user-avatar">{user?.name?.split(' ').map((part) => part[0]).slice(0, 2).join('')}</div>
-          <div>
-            <div className="user-name">{user?.name || 'Rahul Sharma'}</div>
-            <div className="user-plan">Free Plan</div>
+            <div className="user-avatar">{user?.name?.split(' ').map((part) => part[0]).slice(0, 2).join('')}</div>
+            <div>
+              <div className="user-name">{user?.name || 'Rahul Sharma'}</div>
+              <div className="user-plan">Free Plan</div>
+            </div>
+            <button className="logout-btn" type="button" title="Logout" onClick={handleLogout}>
+              <i className="fa-solid fa-power-off" aria-hidden="true" />
+            </button>
           </div>
-          <button className="logout-btn" type="button" title="Logout" onClick={handleLogout}>
-            ⏻
-          </button>
-        </div>
       </aside>
 
       <main className="main">
         <div className="topbar">
           <div className="topbar-title">{PAGE_TITLES[activePage]}</div>
           <div className="topbar-right">
-            <input
-              className="topbar-search"
-              placeholder="🔍  Search meetings…"
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              onInput={(event) => setSearchQuery(event.target.value)}
-            />
+            <div style={{ position: 'relative' }}>
+              <input
+                className="topbar-search"
+                placeholder="Search meetings…"
+                value={searchQuery}
+                onChange={(event) => setSearchQuery(event.target.value)}
+                onInput={(event) => setSearchQuery(event.target.value)}
+              />
+              <i className="fa-solid fa-magnifying-glass topbar-search-icon" aria-hidden="true" />
+            </div>
             <button className="topbar-btn" type="button" onClick={() => handlePageChange('upload')}>
               + Upload Meeting
             </button>
@@ -520,7 +522,7 @@ export default function Dashboard() {
                 filteredDashboardMeetings.map(meetingCard)
               ) : (
                 <div className="empty">
-                  <div className="empty-icon">🔍</div>
+                      <div className="empty-icon"><i className="fa-solid fa-magnifying-glass" aria-hidden="true" /></div>
                   <div className="empty-title">No meetings found</div>
                 </div>
               )}
@@ -556,7 +558,7 @@ export default function Dashboard() {
                 onDrop={handleDrop}
                 onClick={() => document.getElementById('file-input')?.click()}
               >
-                <div className="upload-icon">🎙️</div>
+                <div className="upload-icon"><i className="fa-solid fa-microphone" aria-hidden="true" /></div>
                 <div className="upload-title">Drop your meeting file here</div>
                 <div className="upload-sub">or click to browse files from your device</div>
                 <div className="upload-formats">
@@ -580,12 +582,12 @@ export default function Dashboard() {
               </div>
 
               <div className={`file-preview ${selectedFile ? 'show' : ''}`}>
-                <div className="file-icon">{selectedFile?.name?.split('.').pop()?.toLowerCase() === 'mp4' ? '🎬' : '🎵'}</div>
+                <div className="file-icon">{selectedFile?.name?.split('.').pop()?.toLowerCase() === 'mp4' ? <i className="fa-solid fa-file-video" aria-hidden="true" /> : <i className="fa-solid fa-file-audio" aria-hidden="true" />}</div>
                 <div>
                   <div className="file-name">{selectedFile?.name || 'filename.mp3'}</div>
                   <div className="file-size">{selectedFile ? `${(selectedFile.size / (1024 * 1024)).toFixed(2)} MB` : '0 MB'}</div>
                 </div>
-                <div className="remove-file" onClick={removeFile}>✕</div>
+                <div className="remove-file" onClick={removeFile}><i className="fa-solid fa-xmark" aria-hidden="true" /></div>
               </div>
 
               <div className="upload-form">
@@ -601,7 +603,7 @@ export default function Dashboard() {
                   />
                 </div>
                 <button className="upload-submit" type="button" disabled={processing} onClick={handleUpload}>
-                  <span>🚀</span> Process with AI
+                  <i className="fa-solid fa-rocket" aria-hidden="true" /> Process with AI
                 </button>
               </div>
 
@@ -659,8 +661,8 @@ export default function Dashboard() {
                 { key: 'all', label: `All (${tasks.length})` },
                 { key: 'pending', label: `Pending (${pendingTasks})` },
                 { key: 'done', label: `Done (${completedTasks})` },
-                { key: 'high', label: '🔴 High Priority' },
-                { key: 'medium', label: '🟡 Medium' },
+                { key: 'high', label: <><i className="fa-solid fa-circle" style={{ color: '#ef4444', marginRight: 6 }} /> High Priority</> },
+                { key: 'medium', label: <><i className="fa-solid fa-circle" style={{ color: '#f59e0b', marginRight: 6 }} /> Medium</> },
               ].map((filter) => (
                 <button key={filter.key} className={`filter-btn ${taskFilter === filter.key ? 'active' : ''}`} type="button" onClick={() => setTaskFilter(filter.key)}>
                   {filter.label}
@@ -670,7 +672,7 @@ export default function Dashboard() {
             <div className="task-grid">
               {filteredTasks.length > 0 ? filteredTasks.map((task) => taskCard(task, true)) : (
                 <div className="empty">
-                  <div className="empty-icon">✅</div>
+                  <div className="empty-icon"><i className="fa-solid fa-circle-check" aria-hidden="true" /></div>
                   <div className="empty-title">No tasks here</div>
                   <div className="empty-sub">Try a different filter</div>
                 </div>
@@ -683,9 +685,9 @@ export default function Dashboard() {
             <div className="detail-header">
               <div className="detail-title">{selectedMeeting?.title}</div>
               <div className="detail-meta">
-                <span>📅 {selectedMeeting?.date}</span>
-                <span>⏱ {selectedMeeting?.duration}</span>
-                <span>🎯 {selectedMeeting?.taskCount} tasks extracted</span>
+                <span><i className="fa-solid fa-calendar-days" /> {selectedMeeting?.date}</span>
+                <span style={{ marginLeft: 12 }}><i className="fa-solid fa-stopwatch" /> {selectedMeeting?.duration}</span>
+                <span style={{ marginLeft: 12 }}><i className="fa-solid fa-bullseye" /> {selectedMeeting?.taskCount} tasks extracted</span>
                 <span className={`meeting-status ${selectedMeeting?.status === 'done' ? 'status-done' : 'status-processing'}`}>
                   <span className="status-dot" /> {selectedMeeting?.status === 'done' ? 'Completed' : 'Processing'}
                 </span>
@@ -698,8 +700,8 @@ export default function Dashboard() {
 
             <div className="transcript-card">
               <div className="transcript-header">
-                <div className="sec-title">📄 Full Transcript</div>
-                <button className="export-btn" type="button" onClick={copyTranscript}>📋 Copy</button>
+                <div className="sec-title"><i className="fa-solid fa-file-lines" /> Full Transcript</div>
+                <button className="export-btn" type="button" onClick={copyTranscript}><i className="fa-regular fa-clipboard" /> Copy</button>
               </div>
               <div className="transcript-body">
                 {selectedMeeting?.transcript.split('\n').map((line, index) => (
@@ -709,15 +711,15 @@ export default function Dashboard() {
             </div>
 
             <div className="tasks-panel">
-              <div className="tasks-panel-header">
-                <div className="sec-title">✅ Extracted Tasks <span style={{ color: '#94a1c4', fontWeight: 400, fontSize: '0.85rem' }}>({detailTasks.length})</span></div>
-                <button className="export-btn" type="button" onClick={exportCSV}>⬇ Export CSV</button>
+                <div className="tasks-panel-header">
+                <div className="sec-title"><i className="fa-solid fa-list-check" /> Extracted Tasks <span style={{ color: '#94a1c4', fontWeight: 400, fontSize: '0.85rem' }}>({detailTasks.length})</span></div>
+                <button className="export-btn" type="button" onClick={exportCSV}><i className="fa-solid fa-file-arrow-down" /> Export CSV</button>
               </div>
               <div className="tasks-panel-body">
                 <div className="task-grid">
                   {detailTasks.length > 0 ? detailTasks.map((task) => taskCard(task)) : (
                     <div className="empty">
-                      <div className="empty-icon">✅</div>
+                      <div className="empty-icon"><i className="fa-solid fa-circle-check" aria-hidden="true" /></div>
                       <div className="empty-title">No tasks found</div>
                       <div className="empty-sub">This meeting has no extracted tasks yet.</div>
                     </div>
