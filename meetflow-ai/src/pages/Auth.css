@@ -96,14 +96,25 @@
 
 .password-toggle {
   position: absolute;
-  right: 18px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
-  background: transparent;
-  border: none;
+  width: 42px;
+  height: 42px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 14px;
   color: #a7adc7;
   cursor: pointer;
   display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
+}
+.password-toggle:hover {
+  color: #f0f6ff;
+  border-color: rgba(124, 92, 252, 0.8);
+  background: rgba(124, 92, 252, 0.08);
 }
 
 .auth-footer {
