@@ -85,6 +85,7 @@
   color: #f3f4ff;
   border-radius: 16px;
   padding: 16px 18px;
+  padding-right: 70px;
   outline: none;
   transition: border-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -97,16 +98,15 @@
 .password-toggle {
   position: absolute;
   right: 14px;
-  top: 50%;
-  transform: translateY(-50%);
+  top: 40px;
   width: 42px;
   height: 42px;
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 14px;
+  border-radius: 25px;
   color: #a7adc7;
   cursor: pointer;
-  display: inline-flex;
+  /* display: inline-flex; */
   align-items: center;
   justify-content: center;
   transition: border-color 0.2s ease, color 0.2s ease, background 0.2s ease;
