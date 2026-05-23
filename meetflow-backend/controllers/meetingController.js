@@ -2,6 +2,9 @@ import { Readable } from 'stream';
 import Meeting from '../models/Meeting.js';
 import Task from '../models/Task.js';
 import cloudinary from '../config/cloudinary.js';
+import { extractAudioFromBuffer } from '../services/ffmpeg.js';
+import { transcribeAudioBuffer } from '../services/whisper.js';
+import { summarizeTranscript } from '../services/summarizer.js';
 
 const DEFAULT_TASKS = [
   { title: 'Review meeting notes', assignee: 'You', deadline: 'Today', priority: 'high' },
@@ -45,6 +48,42 @@ export async function createMeeting(req, res, next) {
       return res.status(400).json({ message: 'A meeting title is required.' });
     }
 
+    // Prepare audio buffer for transcription: if a video was uploaded, extract audio.
+    let transcriptText = `Uploaded file ${req.file.originalname}.`;
+    let transcriptionError = null;
+    try {
+      let audioBufferToTranscribe = req.file.buffer;
+      const mime = req.file.mimetype || '';
+      if (mime.startsWith('video/')) {
+        console.log(`Extracting audio from video file: ${req.file.originalname}`);
+        audioBufferToTranscribe = await extractAudioFromBuffer(req.file.buffer, 'wav');
+      }
+
+      // Send audio to Whisper (OpenAI) and get transcript
+      console.log(`Transcribing audio (${(audioBufferToTranscribe.length / 1024 / 1024).toFixed(2)} MB)…`);
+      const text = await transcribeAudioBuffer(audioBufferToTranscribe);
+      if (text && text.trim()) {
+        transcriptText = text.trim();
+        console.log(`Transcription successful: ${transcriptText.length} characters`);
+      }
+
+      // Summarize transcript with GPT service
+      try {
+        console.log('Generating meeting summary…');
+        const ai = await summarizeTranscript(transcriptText);
+        // Attach structured ai summary into request for saving later
+        req.aiSummary = ai;
+        console.log(`Summary generated: ${ai.actionItems?.length || 0} action items, ${ai.keyDecisions?.length || 0} decisions`);
+      } catch (sErr) {
+        console.error('Summary generation error:', sErr.message);
+        transcriptionError = `Summary error: ${sErr.message}`;
+      }
+    } catch (transErr) {
+      // don't fail the whole request if transcription fails; log and continue
+      console.error('Transcription error:', transErr.message);
+      transcriptionError = transErr.message;
+    }
+
     const uploadStream = cloudinary.uploader.upload_stream(
       {
         resource_type: 'auto',
@@ -57,16 +96,22 @@ export async function createMeeting(req, res, next) {
         }
 
         try {
+          const ai = req.aiSummary || {};
+          const hasAi = !!(ai && (ai.summary || (ai.actionItems && ai.actionItems.length) || (ai.keyDecisions && ai.keyDecisions.length) || (ai.followUps && ai.followUps.length)));
           const meeting = await Meeting.create({
             title: title.trim(),
             user: req.user.id,
             date: new Date(),
             duration: result.duration ? `${Math.round(result.duration)} sec` : '—',
             taskCount: 0,
-            status: 'done',
+            status: hasAi ? 'done' : 'processing',
             icon: '🆕',
-            transcript: `Uploaded audio file ${req.file.originalname}.`,
-            summary: `A new meeting recording was stored in Cloudinary and AI-generated tasks were extracted from the audio.`,
+            transcript: transcriptText,
+            summary: ai.summary || `A new meeting recording was stored in Cloudinary and AI-generated tasks were extracted from the audio.`,
+            actionItems: ai.actionItems || [],
+            keyDecisions: ai.keyDecisions || [],
+            followUps: ai.followUps || [],
+            aiSummary: ai,
             audioUrl: result.secure_url,
           });
 

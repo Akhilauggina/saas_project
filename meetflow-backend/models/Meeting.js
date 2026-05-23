@@ -11,6 +11,10 @@ const meetingSchema = new mongoose.Schema(
     icon: { type: String, default: '📋' },
     transcript: { type: String, default: '' },
     summary: { type: String, default: '' },
+    actionItems: { type: [String], default: [] },
+    keyDecisions: { type: [String], default: [] },
+    followUps: { type: [String], default: [] },
+    aiSummary: { type: Object, default: {} },
     audioUrl: { type: String, default: '' },
   },
   {

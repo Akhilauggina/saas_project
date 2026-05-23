@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import MeetingSummaryDetail from '../components/MeetingSummaryDetail';
 import './Dashboard.css';
 
 const INITIAL_MEETINGS = [
@@ -696,6 +697,8 @@ export default function Dashboard() {
                 <div className="summary-label">AI Summary</div>
                 <div className="summary-text">{selectedMeeting?.summary}</div>
               </div>
+
+              <MeetingSummaryDetail meeting={selectedMeeting} />
             </div>
 
             <div className="transcript-card">
