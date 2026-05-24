@@ -1,4 +1,4 @@
-import { Zap, Share2, Link, X } from 'lucide-react';
+import { Share2, Link, X } from 'lucide-react';
 import './Footer.css';
 
 export default function Footer() {
@@ -8,7 +8,12 @@ export default function Footer() {
         <div className="footer__top">
           <div className="footer__brand">
             <a href="#" className="footer__logo">
-              <Zap size={18} className="footer__logo-icon" />
+              <div className="footer__logo-mark">
+                <svg width="14" height="14" viewBox="0 0 16 16" fill="none">
+                  <path d="M8 1L14 4.5V11.5L8 15L2 11.5V4.5L8 1Z" stroke="white" strokeWidth="1.5" strokeLinejoin="round"/>
+                  <path d="M8 5L11 6.75V10.25L8 12L5 10.25V6.75L8 5Z" fill="white" fillOpacity="0.6"/>
+                </svg>
+              </div>
               MeetFlow AI
             </a>
             <p className="footer__tagline">Automate your meeting workflows today.</p>
@@ -42,21 +47,9 @@ export default function Footer() {
           <div className="footer__col">
             <div className="footer__col-title">Social</div>
             <ul className="footer__social">
-              <li>
-                <a href="https://www.facebook.com" target="_blank" rel="noreferrer">
-                  <Share2 size={16} /> Facebook
-                </a>
-              </li>
-              <li>
-                <a href="https://www.instagram.com" target="_blank" rel="noreferrer">
-                  <Link size={16} /> Instagram
-                </a>
-              </li>
-              <li>
-                <a href="https://www.twitter.com" target="_blank" rel="noreferrer">
-                  <X size={16} /> Twitter
-                </a>
-              </li>
+              <li><a href="https://www.facebook.com" target="_blank" rel="noreferrer"><Share2 size={15} />Facebook</a></li>
+              <li><a href="https://www.instagram.com" target="_blank" rel="noreferrer"><Link size={15} />Instagram</a></li>
+              <li><a href="https://www.twitter.com" target="_blank" rel="noreferrer"><X size={15} />Twitter</a></li>
             </ul>
           </div>
         </div>
@@ -65,9 +58,9 @@ export default function Footer() {
           <div className="footer__bottom-links">
             <a href="#">Privacy Policy</a>
             <span>·</span>
-            <a href="#">Terms of Conditions</a>
+            <a href="#">Terms of Service</a>
           </div>
-          <div className="footer__copy">MeetFlow AI. All rights reserved.</div>
+          <div className="footer__copy">© 2025 MeetFlow AI. All rights reserved.</div>
         </div>
       </div>
     </footer>
